@@ -42,9 +42,7 @@ namespace SharpBotCore.Modules.IncidentManagement
 			await this.SetChannelPurposeBasedOnIncidentStatus(incident);
 			await this.SetChannelTopicBasedOnIncidentStatus(incident);
 
-			await this.slackInteraction.SendMessageToChannel(
-				incident.ChannelName,
-				TextHelper.GetNewIncidentTextForWarRoomChannel(incident));
+			await this.slackInteraction.SendIncidentBoundMessageToChannel(incident);
 			await this.slackInteraction.SendIncidentDeclaredMainChannelMessage(incident);
 
 			this.logger.LogInformation($"Declared new incident for {reportedByUser} with incidentId:{incident.Id}");
@@ -122,6 +120,7 @@ namespace SharpBotCore.Modules.IncidentManagement
 
 			await this.SetChannelPurposeBasedOnIncidentStatus(incident);
 			await this.SetChannelTopicBasedOnIncidentStatus(incident);
+
 			await this.slackInteraction.SendIncidentClosedMainChannelMessage(incident);
 
 			return new IncidentResponse(incident, IncidentOperationStatus.Success);

@@ -16,7 +16,7 @@ namespace SharpBotCore.Modules.IncidentManagement
 
 		Task SendIncidentClosedMainChannelMessage(Incident incident);
 
-		Task SendMessageToChannel(string channelName, string messageText);
+		Task SendIncidentBoundMessageToChannel(Incident incident);
 
 		Task UpdateChannelTopic(string channelId, string topic);
 

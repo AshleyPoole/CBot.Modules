@@ -111,9 +111,12 @@ namespace SharpBotCore.Modules.IncidentManagement
 			await this.slackConnection.SetChannelPurpose(channelId, purpose);
 		}
 
-		public async Task SendMessageToChannel(string channelName, string messageText)
+		public async Task SendIncidentBoundMessageToChannel(Incident incident)
 		{
-			var chatHub = new SlackChatHub { Id = channelName };
+			var messageText = $"Incident #{incident.FriendlyId} regarding '{incident.Title}' has been declared by @{incident.DeclaredBy} and bound to this channel.\n"
+				+ "Please run `mitigated incident` once the incident has been mitigated and remember to add people to the channel that might be able to help. Good luck!";
+
+			var chatHub = new SlackChatHub { Id = incident.ChannelName };
 			var message = new BotMessage { ChatHub = chatHub, Text = messageText };
 
 			await this.slackConnection.Say(message);
