@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using SharpBotCore.Messaging.Domain;
 using SharpBotCore.Middleware.Domain;
@@ -13,7 +14,7 @@ namespace SharpBotCore.Modules.IncidentManagement
 
 		private readonly ModuleConfiguration configuration;
 
-		private readonly string declareIncidentCommand = $"new {Parameters.Incident}";
+		private readonly string DeclareIncidentCommand = $"new {Parameters.Incident}";
 
 		private readonly string mitigatedIncidentCommand = $"{Parameters.Incident} mitigated";
 
@@ -30,9 +31,9 @@ namespace SharpBotCore.Modules.IncidentManagement
 									{
 										new HandlerMapping
 										{
-											Handlers = StartsWithHandler.For(this.declareIncidentCommand),
+											Handlers = StartsWithHandler.For(this.DeclareIncidentCommand),
 											EvaluatorFunc = this.DeclareNewIncident,
-											Description = $"Declares a new incident. I.e @{{bot}} {this.declareIncidentCommand} Server is on fire",
+											Description = $"Declares a new incident. I.e {this.DeclareIncidentExample()}",
 											VisibleInHelp = true
 											
 										},
@@ -47,7 +48,7 @@ namespace SharpBotCore.Modules.IncidentManagement
 										{
 											Handlers = StartsWithHandler.For($"{IncidentPostmortemCommand}"),
 											EvaluatorFunc = this.AddPostmortemToIncidentHandler,
-											Description = $"Adds the postmortem link to the incident associated with current channel. Ie. {GetAddPostmortemExample()}",
+											Description = $"Adds the postmortem link to the incident associated with current channel. Ie. {AddPostmortemExample}",
 											VisibleInHelp = true
 										},
 										new HandlerMapping
@@ -55,6 +56,20 @@ namespace SharpBotCore.Modules.IncidentManagement
 											Handlers = ExactMatchHandler.For($"{this.closeIncidentCommand}"),
 											EvaluatorFunc = this.CloseIncidentHandler,
 											Description = "Close the incident associated with current channel.",
+											VisibleInHelp = true
+										},
+										new HandlerMapping
+										{
+											Handlers = ExactMatchHandler.For($"active {Parameters.Incident}s"),
+											EvaluatorFunc = this.ActiveIncidentsHandler,
+											Description = "Lists active incidents.",
+											VisibleInHelp = true
+										},
+										new HandlerMapping
+										{
+											Handlers = ExactMatchHandler.For($"recent {Parameters.Incident}s"),
+											EvaluatorFunc = this.RecentIncidentsHandler,
+											Description = "Lists recent incidents.",
 											VisibleInHelp = true
 										},
 									};
@@ -70,7 +85,7 @@ namespace SharpBotCore.Modules.IncidentManagement
 				yield break;
 			}
 
-			var incidentText = GetIncidentText(this.declareIncidentCommand, incomingMessage.TargetedText);
+			var incidentText = GetIncidentText(this.DeclareIncidentCommand, incomingMessage.TargetedText);
 
 			var incidentRequest = this.incidentManager.DeclareNewIncident(incidentText, incomingMessage.Username)
 				.GetAwaiter().GetResult();
@@ -98,7 +113,7 @@ namespace SharpBotCore.Modules.IncidentManagement
 			{
 				case IncidentOperationStatus.Success:
 					yield return incomingMessage.ReplyToChannel(
-						$"Incident #{incidentRequest.Incident.FriendlyId} successfully marked as mitigated. Please add the postmortem if not already done. I.e {GetAddPostmortemExample()}\n"
+						$"Incident #{incidentRequest.Incident.FriendlyId} successfully marked as mitigated. Please add the postmortem if not already done. I.e {AddPostmortemExample}\n"
 						+ $"To create a new postmortem using the template, please go here { this.configuration.PostmortemTemplateLink }.");
 					break;
 				case IncidentOperationStatus.IncidentAlreadyResolved:
@@ -117,7 +132,7 @@ namespace SharpBotCore.Modules.IncidentManagement
 
 			if (!IncidentCommandWellFormatted(incomingMessage.TargetedText))
 			{
-				yield return incomingMessage.ReplyToChannel($"Please provide the postmortem link. I.e `{GetAddPostmortemExample()}`");
+				yield return incomingMessage.ReplyToChannel($"Please provide the postmortem link. I.e `{AddPostmortemExample}`");
 			}
 
 			var postmortemLink = GetIncidentText(IncidentPostmortemCommand, incomingMessage.TargetedText);
@@ -165,6 +180,44 @@ namespace SharpBotCore.Modules.IncidentManagement
 			}
 		}
 
+		private IEnumerable<ResponseMessage> ActiveIncidentsHandler(IncomingMessage incomingMessage, IHandler matchedHandle)
+		{
+			var activeIncidents = this.incidentManager.GetActiveIncidents().GetAwaiter().GetResult()
+				.OrderBy(x => x.DeclaredDateTimeUtc).ToList();
+
+			if (activeIncidents.Any())
+			{
+				yield return incomingMessage.ReplyToChannel(
+					$"There are {activeIncidents.Count} incident(s) currently open:",
+				//openIncidentAttachments); // TODO
+					new Attachment());
+			}
+			else
+			{
+				yield return incomingMessage.ReplyToChannel(
+					$"Great news! There's no active incidents. If you need to declare a new incident, run `{ this.DeclareIncidentExample() }`.");
+			}
+		}
+
+		private IEnumerable<ResponseMessage> RecentIncidentsHandler(IncomingMessage incomingMessage, IHandler matchedHandle)
+		{
+			var recentIncidents = this.incidentManager.GetRecentIncidents(pastDays: 7).GetAwaiter().GetResult()
+				.OrderBy(x => x.DeclaredDateTimeUtc).ToList();
+
+			if (recentIncidents.Any())
+			{
+				yield return incomingMessage.ReplyToChannel(
+					$"There have been {recentIncidents.Count} recent incident(s):",
+					//openIncidentAttachments);  // TODO
+					new Attachment());
+			}
+			else
+			{
+				yield return incomingMessage.ReplyToChannel(
+					$"Great news! There's no recent incidents. If you need to declare a new incident, run `{ this.DeclareIncidentExample() }`.");
+			}
+		}
+
 		private static bool IncidentCommandWellFormatted(string message)
 		{
 			return message.Split(" ", StringSplitOptions.RemoveEmptyEntries).Length >= 3;
@@ -175,6 +228,11 @@ namespace SharpBotCore.Modules.IncidentManagement
 			return message.Replace(commandPrefix, string.Empty).Trim();
 		}
 
-		private static string GetAddPostmortemExample() => $"@{{bot}} {IncidentPostmortemCommand} https://mywebsite/postmortem/101";
+		private string DeclareIncidentExample()
+		{
+			return $"@{{bot}} {this.DeclareIncidentCommand} Server is on fire";
+		}
+
+		private static string AddPostmortemExample => $"@{{bot}} {IncidentPostmortemCommand} https://mywebsite/postmortem/101";
 	}
 }

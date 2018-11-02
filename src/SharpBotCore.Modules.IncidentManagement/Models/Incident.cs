@@ -1,12 +1,13 @@
 ﻿using System;
+using System.ComponentModel;
 
 using Microsoft.WindowsAzure.Storage.Table;
 
 namespace SharpBotCore.Modules.IncidentManagement.Models
 {
-	internal class Incident : TableEntity
+	public class Incident : TableEntity
 	{
-		public Incident(string incidentTitle, Channel channel, string declaredBy)
+		internal Incident(string incidentTitle, Channel channel, string declaredBy)
 		{
 			this.Id = Guid.NewGuid();
 			this.PartitionKey = DateTime.UtcNow.ToString("yyyy-MM-dd");
@@ -31,34 +32,46 @@ namespace SharpBotCore.Modules.IncidentManagement.Models
 
 		public string ChannelId { get; set; }
 
+		[DisplayName("Channel")]
 		public string ChannelName { get; set; }
 
+		[DisplayName("Declared By")]
 		public string DeclaredBy { get; set; }
 
+		[DisplayName("Declared Timestamp")]
 		public DateTime DeclaredDateTimeUtc { get; set; }
 
 		public bool Resolved { get; set; }
 
+		[DisplayName("Resolved By")]
 		public string ResolvedBy { get; set; }
 
+		[DisplayName("Resolved Timestamp")]
 		public DateTime? ResolvedDateTimeUtc { get; set; }
 
+		[DisplayName("Postmortem Link")]
 		public string PostmortermLink { get; set; }
 
+		[DisplayName("Postmortem Added By")]
 		public string PostmortermAddedBy { get; set; }
 
+		[DisplayName("Postmortem Added Timestamp")]
 		public DateTime? PostmortemAddedDateTimeUtc { get; set; }
 
 		public bool Closed { get; set; }
 
+		[DisplayName("Closed By")]
 		public string ClosedBy { get; set; }
 
+		[DisplayName("Closed Timestamp")]
 		public DateTime? ClosedDateTimeUtc { get; set; }
 
+		[DisplayName("Id")]
 		public string FriendlyId => $"{this.PartitionKey}-{this.RowKey}";
 
 		public bool PostmortemAdded => !string.IsNullOrWhiteSpace(this.PostmortermLink);
 
+		[DisplayName("Status")]
 		public string FriendlyStatus
 		{
 			get

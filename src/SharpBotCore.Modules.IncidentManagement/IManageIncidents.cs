@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 using SharpBotCore.Modules.IncidentManagement.Models;
 
@@ -16,5 +17,9 @@ namespace SharpBotCore.Modules.IncidentManagement
 			string incidentChannelId);
 
 		Task<IncidentResponse> CloseIncident(string resolvedBy, string incidentChannelId);
+
+		Task<List<Incident>> GetActiveIncidents();
+
+		Task<List<Incident>> GetRecentIncidents(int pastDays = 14);
 	}
 }

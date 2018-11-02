@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using SharpBotCore.Modules.IncidentManagement.Models;
@@ -17,8 +18,10 @@ namespace SharpBotCore.Modules.IncidentManagement
 
 		Task<Incident> GetIncidentByChannelName(string channelName);
 
-		Task<List<Incident>> GetOpenIncidents();
+		Task<Incident> GetIncidentById(Guid friendlyId);
 
-		Task<List<Incident>> GetRecentIncidents();
+		Task<List<Incident>> GetActiveIncidents();
+
+		Task<List<Incident>> GetRecentIncidents(int days);
 	}
 }

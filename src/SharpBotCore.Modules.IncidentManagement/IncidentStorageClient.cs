@@ -76,6 +76,28 @@ namespace SharpBotCore.Modules.IncidentManagement
 			} while (token != null);
 		}
 
+		public async Task<Incident> GetIncidentById(Guid id)
+		{
+			await this.EnsureIncidentsTableExists();
+
+			var query = new TableQuery<Incident>().Where(TableQuery.GenerateFilterConditionForGuid(
+				nameof(Incident.Id),
+				QueryComparisons.Equal,
+				id));
+
+			TableContinuationToken token = null;
+			do
+			{
+				var incidentsQuery = await this.incidentTable.ExecuteQuerySegmentedAsync(query, token);
+				token = incidentsQuery.ContinuationToken;
+
+				return !incidentsQuery.Results.Any()
+							? null
+							: incidentsQuery.Results.First();
+
+			} while (token != null);
+		}
+
 		public async Task<Incident> GetIncidentByChannelId(string channelId)
 		{
 			await this.EnsureIncidentsTableExists();
@@ -106,7 +128,7 @@ namespace SharpBotCore.Modules.IncidentManagement
 			return (Incident)updateResult.Result;
 		}
 
-		public async Task<List<Incident>> GetOpenIncidents()
+		public async Task<List<Incident>> GetActiveIncidents()
 		{
 			await this.EnsureIncidentsTableExists();
 
@@ -124,7 +146,7 @@ namespace SharpBotCore.Modules.IncidentManagement
 			} while (token != null);
 		}
 
-		public async Task<List<Incident>> GetRecentIncidents()
+		public async Task<List<Incident>> GetRecentIncidents(int days)
 		{
 			await this.EnsureIncidentsTableExists();
 
@@ -132,7 +154,7 @@ namespace SharpBotCore.Modules.IncidentManagement
 				TableQuery.GenerateFilterCondition(
 					nameof(Incident.PartitionKey),
 					QueryComparisons.GreaterThanOrEqual,
-					DateTime.UtcNow.AddDays(-7).ToString("yyyy-MM-dd")));
+					DateTime.UtcNow.AddDays(-days).ToString("yyyy-MM-dd")));
 
 			TableContinuationToken token = null;
 			do

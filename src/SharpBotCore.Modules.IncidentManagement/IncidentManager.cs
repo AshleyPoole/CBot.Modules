@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
@@ -6,7 +8,7 @@ using SharpBotCore.Modules.IncidentManagement.Models;
 
 namespace SharpBotCore.Modules.IncidentManagement
 {
-	internal class IncidentManager : IManageIncidents
+	internal class IncidentManager : IManageIncidents, IRetrieveIncidents
 	{
 		private readonly IIncidentStorage incidentStorage;
 
@@ -124,6 +126,21 @@ namespace SharpBotCore.Modules.IncidentManagement
 			await this.slackInteraction.SendIncidentClosedMainChannelMessage(incident);
 
 			return new IncidentResponse(incident, IncidentOperationStatus.Success);
+		}
+
+		public async Task<Incident> GetIncidentById(Guid id)
+		{
+			return await this.incidentStorage.GetIncidentById(id);
+		}
+
+		public async Task<List<Incident>> GetActiveIncidents()
+		{
+			return await this.incidentStorage.GetActiveIncidents();
+		}
+
+		public async Task<List<Incident>> GetRecentIncidents(int pastDays = 14)
+		{
+			return await this.incidentStorage.GetRecentIncidents(pastDays);
 		}
 
 		private async Task<Channel> GetAvailableWarRoomChannel()

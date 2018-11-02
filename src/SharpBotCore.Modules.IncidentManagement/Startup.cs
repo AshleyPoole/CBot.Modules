@@ -13,6 +13,7 @@ namespace SharpBotCore.Modules.IncidentManagement
 		{
 			serviceCollection.AddSingleton<IIncidentStorage, IncidentStorageClient>();
 			serviceCollection.AddSingleton<IManageIncidents, IncidentManager>();
+			serviceCollection.AddSingleton<IRetrieveIncidents, IncidentManager>();
 			serviceCollection.AddSingleton<IMiddleware, IncidentManagementMiddleware>();
 			serviceCollection.AddSingleton<IInteractWithSlack, SlackInteractionService>();
 
