@@ -155,7 +155,7 @@ namespace SharpBotCore.Modules.IncidentManagement
 							Title = "Resolved Timestamp",
 							Value = $"{string.Format("{0:s}", incident.ResolvedDateTimeUtc)} UTC"
 						},
-						new SlackAttachmentField { IsShort = true, Title = "Resolved By", Value = incident.ResolvedBy }
+						new SlackAttachmentField { IsShort = true, Title = "Resolved By", Value = $@"{incident.ResolvedBy}" }
 					};
 		}
 
@@ -167,8 +167,8 @@ namespace SharpBotCore.Modules.IncidentManagement
 						new SlackAttachmentField
 						{
 							IsShort = true,
-							Title = "Postmortem By",
-							Value = $"{string.Format("{0:s}", incident.PostmortermAddedBy)} UTC"
+							Title = "Postmortem Added By",
+							Value = $"@{incident.PostmortermAddedBy}"
 						}
 					};
 		}
@@ -183,7 +183,7 @@ namespace SharpBotCore.Modules.IncidentManagement
 							Title = "Closed Timestamp",
 							Value = $"{string.Format("{0:s}", incident.ClosedDateTimeUtc)} UTC"
 						},
-						new SlackAttachmentField { IsShort = true, Title = "Closed By", Value = incident.ClosedBy }
+						new SlackAttachmentField { IsShort = true, Title = "Closed By", Value = $"@{incident.ClosedBy}" }
 					};
 		}
 	}

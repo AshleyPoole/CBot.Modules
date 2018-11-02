@@ -13,39 +13,48 @@ namespace SharpBotCore.Modules.IncidentManagement
 
 		private readonly ModuleConfiguration configuration;
 
+		private readonly string declareIncidentCommand = $"new {Parameters.Incident}";
+
+		private readonly string mitigatedIncidentCommand = $"{Parameters.Incident} mitigated";
+
+		private static readonly string IncidentPostmortemCommand = $"{Parameters.Incident} postmortem";
+
+		private readonly string closeIncidentCommand = $"close {Parameters.Incident}";
+
 		public IncidentManagementMiddleware(IManageIncidents incidentManager, ModuleConfiguration configuration)
 		{
 			this.incidentManager = incidentManager;
 			this.configuration = configuration;
 
-			this.HandlerMappings = new HandlerMapping[]
+			this.HandlerMappings = new[]
 									{
 										new HandlerMapping
 										{
-											Handlers = StartsWithHandler.For($"new { Parameters.Incident }"),
+											Handlers = StartsWithHandler.For(this.declareIncidentCommand),
 											EvaluatorFunc = this.DeclareNewIncident,
-											Description = "Declares a new incident.", // TODO: ADD EXAMPLE TO HELP TEXT
+											Description = $"Declares a new incident. I.e @{{bot}} {this.declareIncidentCommand} Server is on fire",
 											VisibleInHelp = true
+											
 										},
 										new HandlerMapping
 										{
-											Handlers = ExactMatchHandler.For($"mitigated { Parameters.Incident }"),
+											Handlers = ExactMatchHandler.For(this.mitigatedIncidentCommand),
 											EvaluatorFunc = this.MitigateIncidentHandler,
-											Description = $"Resolve the incident associated with current channel. {this.resolveIncidentHelpText}",
+											Description = "Marks the open incident associated with current channel as mitigated.",
 											VisibleInHelp = true
 										},
 										new HandlerMapping
 										{
-											Handlers = StartsWithHandler.For($"{ Parameters.Incident } postmortem"),
+											Handlers = StartsWithHandler.For($"{IncidentPostmortemCommand}"),
 											EvaluatorFunc = this.AddPostmortemToIncidentHandler,
-											Description = $"Adds the postmortem link to the incident associated with current channel. {this.postmortemIncidentHelpText}",
+											Description = $"Adds the postmortem link to the incident associated with current channel. Ie. {GetAddPostmortemExample()}",
 											VisibleInHelp = true
 										},
 										new HandlerMapping
 										{
-											Handlers = ExactMatchHandler.For($"close { Parameters.Incident }"),
+											Handlers = ExactMatchHandler.For($"{this.closeIncidentCommand}"),
 											EvaluatorFunc = this.CloseIncidentHandler,
-											Description = $"Close the incident associated with current channel. {this.closeIncidentHelpText}",
+											Description = "Close the incident associated with current channel.",
 											VisibleInHelp = true
 										},
 									};
@@ -57,14 +66,12 @@ namespace SharpBotCore.Modules.IncidentManagement
 
 			if (!IncidentCommandWellFormatted(incomingMessage.TargetedText))
 			{
-				yield return incomingMessage.ReplyToChannel($"Sorry, you must provide a title in order to declare an incident.");
+				yield return incomingMessage.ReplyToChannel("Sorry, you must provide a title in order to declare an incident.");
 				yield break;
 			}
 
-			// TODO: SHOULD new incident be in a var or const?
-			var incidentText = GetIncidentText($"new {Parameters.Incident}", incomingMessage.TargetedText);
+			var incidentText = GetIncidentText(this.declareIncidentCommand, incomingMessage.TargetedText);
 
-			// TODO: AWAIT THIS?
 			var incidentRequest = this.incidentManager.DeclareNewIncident(incidentText, incomingMessage.Username)
 				.GetAwaiter().GetResult();
 			if (incidentRequest.OperationStatus == IncidentOperationStatus.NoWarroomAvailable)
@@ -91,8 +98,7 @@ namespace SharpBotCore.Modules.IncidentManagement
 			{
 				case IncidentOperationStatus.Success:
 					yield return incomingMessage.ReplyToChannel(
-						$"Incident #{incidentRequest.Incident.FriendlyId} successfully marked as mitigated. Please run {this.postmortemIncidentHelpText} followed "
-						+ $"by the postmortem link to add the postmortem to this incident, if not already done. "
+						$"Incident #{incidentRequest.Incident.FriendlyId} successfully marked as mitigated. Please add the postmortem if not already done. I.e {GetAddPostmortemExample()}\n"
 						+ $"To create a new postmortem using the template, please go here { this.configuration.PostmortemTemplateLink }.");
 					break;
 				case IncidentOperationStatus.IncidentAlreadyResolved:
@@ -111,12 +117,10 @@ namespace SharpBotCore.Modules.IncidentManagement
 
 			if (!IncidentCommandWellFormatted(incomingMessage.TargetedText))
 			{
-				// TODO: TWEAK THE TEXT SLIGHTLY
-				yield return incomingMessage.ReplyToChannel($"Please provide the postmortem link. Help: {this.postmortemIncidentHelpText}");
+				yield return incomingMessage.ReplyToChannel($"Please provide the postmortem link. I.e `{GetAddPostmortemExample()}`");
 			}
 
-			// TODO: SHOULD new incident be in a var or const?
-			var postmortemLink = GetIncidentText($"{Parameters.Incident} postmortem", incomingMessage.TargetedText);
+			var postmortemLink = GetIncidentText(IncidentPostmortemCommand, incomingMessage.TargetedText);
 
 			var incidentRequest = this.incidentManager
 				.AddPostmortemToIncident(postmortemLink, incomingMessage.Username, incomingMessage.Channel).GetAwaiter()
@@ -127,7 +131,7 @@ namespace SharpBotCore.Modules.IncidentManagement
 				case IncidentOperationStatus.Success:
 					yield return incomingMessage.ReplyToChannel(
 						$"Incident #{incidentRequest.Incident.FriendlyId} has been successfully updated with the postmortem link. "
-						+ $"Once the postmortem and incident are both complete, please run {this.closeIncidentHelpText} to close the incident.");
+						+ $"Once the postmortem and incident are both complete, please run `@{{bot}} {this.closeIncidentCommand}` to close the incident.");
 					break;
 				default:
 					yield return incomingMessage.ReplyToChannel("No open incident was found associated to this channel.");
@@ -146,13 +150,14 @@ namespace SharpBotCore.Modules.IncidentManagement
 			{
 				case IncidentOperationStatus.Success:
 					yield return incomingMessage.ReplyToChannel(
-						$"Incident #{incidentRequest.Incident.FriendlyId} has been successfully closed. Please the ensure the postmortem is complete. This channel will now be marked as available.");
+						$"Incident #{incidentRequest.Incident.FriendlyId} has been successfully closed. Please the ensure the postmortem is complete ({incidentRequest.Incident.PostmortermLink}).\n" 
+						+ "This channel will now be marked as available ready for the next incident.");
 					break;
 				case IncidentOperationStatus.IncidentNotResolved:
-					yield return incomingMessage.ReplyToChannel("The incident cannot be closed as the incident has not been marked as mitigated and no postmortem has been recorded.");
+					yield return incomingMessage.ReplyToChannel("The incident cannot be closed as it has not been marked as mitigated and postmortem is missing.");
 					break;
 				case IncidentOperationStatus.IncidentMissingPostmortem:
-					yield return incomingMessage.ReplyToChannel("The incident cannot be closed as no postmortem has been recorded.");
+					yield return incomingMessage.ReplyToChannel("The incident cannot be closed as no postmortem has been added.");
 					break;
 				default:
 					yield return incomingMessage.ReplyToChannel("No open incident was found associated to this channel.");
@@ -169,5 +174,7 @@ namespace SharpBotCore.Modules.IncidentManagement
 		{
 			return message.Replace(commandPrefix, string.Empty).Trim();
 		}
+
+		private static string GetAddPostmortemExample() => $"@{{bot}} {IncidentPostmortemCommand} https://mywebsite/postmortem/101";
 	}
 }

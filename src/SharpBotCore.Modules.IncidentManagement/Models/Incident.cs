@@ -72,7 +72,7 @@ namespace SharpBotCore.Modules.IncidentManagement.Models
 
 				if (this.Resolved && !this.Closed)
 				{
-					incidentStatus = "RESOLVED";
+					incidentStatus = "MITIGATED";
 				}
 
 				if (this.Resolved && this.Closed)
