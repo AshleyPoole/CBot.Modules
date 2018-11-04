@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27703.2000
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpBotCore.Modules.IncidentManagement", "SharpBotCore.Modules.IncidentManagement\SharpBotCore.Modules.IncidentManagement.csproj", "{6B189A01-ED82-4009-BC24-0E2C34EF5794}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpBotCore.Modules.IncidentManagement", "SharpBotCore.Modules.IncidentManagement\SharpBotCore.Modules.IncidentManagement.csproj", "{6B189A01-ED82-4009-BC24-0E2C34EF5794}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpBotCore.Modules.Cloudflare", "SharpBotCore.Modules.Cloudflare\SharpBotCore.Modules.Cloudflare.csproj", "{92D15CDD-3F13-4EC8-9B08-54701FE888A8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{6B189A01-ED82-4009-BC24-0E2C34EF5794}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6B189A01-ED82-4009-BC24-0E2C34EF5794}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6B189A01-ED82-4009-BC24-0E2C34EF5794}.Release|Any CPU.Build.0 = Release|Any CPU
+		{92D15CDD-3F13-4EC8-9B08-54701FE888A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92D15CDD-3F13-4EC8-9B08-54701FE888A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92D15CDD-3F13-4EC8-9B08-54701FE888A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92D15CDD-3F13-4EC8-9B08-54701FE888A8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
