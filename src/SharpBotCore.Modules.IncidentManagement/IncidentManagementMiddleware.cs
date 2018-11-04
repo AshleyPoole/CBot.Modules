@@ -5,6 +5,7 @@ using System.Linq;
 using SharpBotCore.Messaging.Domain;
 using SharpBotCore.Middleware.Domain;
 using SharpBotCore.Middleware.Domain.Handlers;
+using SharpBotCore.Modules.IncidentManagement.Models;
 
 namespace SharpBotCore.Modules.IncidentManagement
 {
@@ -14,7 +15,7 @@ namespace SharpBotCore.Modules.IncidentManagement
 
 		private readonly ModuleConfiguration configuration;
 
-		private readonly string DeclareIncidentCommand = $"new {Parameters.Incident}";
+		private readonly string declareIncidentCommand = $"new {Parameters.Incident}";
 
 		private readonly string mitigatedIncidentCommand = $"{Parameters.Incident} mitigated";
 
@@ -31,7 +32,7 @@ namespace SharpBotCore.Modules.IncidentManagement
 									{
 										new HandlerMapping
 										{
-											Handlers = StartsWithHandler.For(this.DeclareIncidentCommand),
+											Handlers = StartsWithHandler.For(this.declareIncidentCommand),
 											EvaluatorFunc = this.DeclareNewIncident,
 											Description = $"Declares a new incident. I.e {this.DeclareIncidentExample()}",
 											VisibleInHelp = true
@@ -85,11 +86,11 @@ namespace SharpBotCore.Modules.IncidentManagement
 				yield break;
 			}
 
-			var incidentText = GetIncidentText(this.DeclareIncidentCommand, incomingMessage.TargetedText);
+			var incidentText = GetIncidentText(this.declareIncidentCommand, incomingMessage.TargetedText);
 
 			var incidentRequest = this.incidentManager.DeclareNewIncident(incidentText, incomingMessage.Username)
 				.GetAwaiter().GetResult();
-			if (incidentRequest.OperationStatus == IncidentOperationStatus.NoWarroomAvailable)
+			if (incidentRequest.OperationStatus == OperationStatus.NoWarroomAvailable)
 			{
 				yield return
 					incomingMessage
@@ -111,12 +112,12 @@ namespace SharpBotCore.Modules.IncidentManagement
 
 			switch (incidentRequest.OperationStatus)
 			{
-				case IncidentOperationStatus.Success:
+				case OperationStatus.Success:
 					yield return incomingMessage.ReplyToChannel(
 						$"Incident #{incidentRequest.Incident.FriendlyId} successfully marked as mitigated. Please add the postmortem if not already done. I.e {AddPostmortemExample}\n"
 						+ $"To create a new postmortem using the template, please go here { this.configuration.PostmortemTemplateLink }.");
 					break;
-				case IncidentOperationStatus.IncidentAlreadyResolved:
+				case OperationStatus.IncidentAlreadyResolved:
 					yield return incomingMessage.ReplyToChannel(
 						"The open incident linked to this channel has already been marked as mitigated.");
 					break;
@@ -143,7 +144,7 @@ namespace SharpBotCore.Modules.IncidentManagement
 
 			switch (incidentRequest.OperationStatus)
 			{
-				case IncidentOperationStatus.Success:
+				case OperationStatus.Success:
 					yield return incomingMessage.ReplyToChannel(
 						$"Incident #{incidentRequest.Incident.FriendlyId} has been successfully updated with the postmortem link. "
 						+ $"Once the postmortem and incident are both complete, please run `@{{bot}} {this.closeIncidentCommand}` to close the incident.");
@@ -163,15 +164,15 @@ namespace SharpBotCore.Modules.IncidentManagement
 
 			switch (incidentRequest.OperationStatus)
 			{
-				case IncidentOperationStatus.Success:
+				case OperationStatus.Success:
 					yield return incomingMessage.ReplyToChannel(
 						$"Incident #{incidentRequest.Incident.FriendlyId} has been successfully closed. Please the ensure the postmortem is complete ({incidentRequest.Incident.PostmortermLink}).\n" 
 						+ "This channel will now be marked as available ready for the next incident.");
 					break;
-				case IncidentOperationStatus.IncidentNotResolved:
+				case OperationStatus.IncidentNotResolved:
 					yield return incomingMessage.ReplyToChannel("The incident cannot be closed as it has not been marked as mitigated and postmortem is missing.");
 					break;
-				case IncidentOperationStatus.IncidentMissingPostmortem:
+				case OperationStatus.IncidentMissingPostmortem:
 					yield return incomingMessage.ReplyToChannel("The incident cannot be closed as no postmortem has been added.");
 					break;
 				default:
@@ -189,8 +190,7 @@ namespace SharpBotCore.Modules.IncidentManagement
 			{
 				yield return incomingMessage.ReplyToChannel(
 					$"There are {activeIncidents.Count} incident(s) currently open:",
-				//openIncidentAttachments); // TODO
-					new Attachment());
+					GetIncidentAttachments(activeIncidents));
 			}
 			else
 			{
@@ -201,15 +201,14 @@ namespace SharpBotCore.Modules.IncidentManagement
 
 		private IEnumerable<ResponseMessage> RecentIncidentsHandler(IncomingMessage incomingMessage, IHandler matchedHandle)
 		{
-			var recentIncidents = this.incidentManager.GetRecentIncidents(pastDays: 7).GetAwaiter().GetResult()
+			var recentIncidents = this.incidentManager.GetRecentIncidents(pastDays: 10).GetAwaiter().GetResult()
 				.OrderBy(x => x.DeclaredDateTimeUtc).ToList();
 
 			if (recentIncidents.Any())
 			{
 				yield return incomingMessage.ReplyToChannel(
 					$"There have been {recentIncidents.Count} recent incident(s):",
-					//openIncidentAttachments);  // TODO
-					new Attachment());
+					GetIncidentAttachments(recentIncidents));
 			}
 			else
 			{
@@ -218,20 +217,52 @@ namespace SharpBotCore.Modules.IncidentManagement
 			}
 		}
 
-		private static bool IncidentCommandWellFormatted(string message)
+		private static List<Attachment> GetIncidentAttachments(List<Incident> incidents)
 		{
-			return message.Split(" ", StringSplitOptions.RemoveEmptyEntries).Length >= 3;
+			var attachments = new List<Attachment>();
+
+			foreach (var incident in incidents)
+			{
+				var attachmentFields = new List<AttachmentField>();
+				attachmentFields.AddRange(AttachmentGenerator.GetCoreAttachmentFields(incident));
+
+				var incidentNotificationColor = Parameters.UnresolvedIncidentColor;
+
+				if (incident.Resolved)
+				{
+					incidentNotificationColor = Parameters.ResolvedIncidentColor;
+					attachmentFields.AddRange(AttachmentGenerator.GetResolvedAttachmentFields(incident));
+				}
+
+				if (incident.PostmortemAdded)
+				{
+					incidentNotificationColor = Parameters.PostmortemIncidentColor;
+					attachmentFields.AddRange(AttachmentGenerator.GetPostmortemAttachmentFields(incident));
+				}
+
+				if (incident.Closed)
+				{
+					incidentNotificationColor = Parameters.ClosedIncidentColor;
+					attachmentFields.AddRange(AttachmentGenerator.GetClosedAttachmentFields(incident));
+				}
+
+				attachments.Add(
+					new Attachment
+					{
+						AttachmentFields = attachmentFields,
+						Color = incidentNotificationColor,
+						Title = $"INCIDENT #{incident.FriendlyId}"
+					});
+			}
+
+			return attachments;
 		}
 
-		private static string GetIncidentText(string commandPrefix, string message)
-		{
-			return message.Replace(commandPrefix, string.Empty).Trim();
-		}
+		private static bool IncidentCommandWellFormatted(string message) => message.Split(" ", StringSplitOptions.RemoveEmptyEntries).Length >= 3;
 
-		private string DeclareIncidentExample()
-		{
-			return $"@{{bot}} {this.DeclareIncidentCommand} Server is on fire";
-		}
+		private static string GetIncidentText(string commandPrefix, string message) => message.Replace(commandPrefix, string.Empty).Trim();
+
+		private string DeclareIncidentExample() => $"@{{bot}} {this.declareIncidentCommand} Server is on fire";
 
 		private static string AddPostmortemExample => $"@{{bot}} {IncidentPostmortemCommand} https://mywebsite/postmortem/101";
 	}

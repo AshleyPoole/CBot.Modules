@@ -1,6 +1,6 @@
 ﻿namespace SharpBotCore.Modules.IncidentManagement
 {
-	enum IncidentOperationStatus
+	enum OperationStatus
 	{
 		Success,
 		NoWarroomAvailable,

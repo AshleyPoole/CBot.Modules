@@ -32,7 +32,7 @@ namespace SharpBotCore.Modules.IncidentManagement
 			if (assignedWarRoomChannel == null)
 			{
 				this.logger.LogInformation($"No available channels are available for incident being declared by {reportedByUser}.");
-				return new IncidentResponse(null, IncidentOperationStatus.NoWarroomAvailable);
+				return new IncidentResponse(null, OperationStatus.NoWarroomAvailable);
 			}
 
 			var incident = new Incident(incidentTitle, assignedWarRoomChannel, reportedByUser);
@@ -49,7 +49,7 @@ namespace SharpBotCore.Modules.IncidentManagement
 
 			this.logger.LogInformation($"Declared new incident for {reportedByUser} with incidentId:{incident.Id}");
 
-			return new IncidentResponse(incident, IncidentOperationStatus.Success);
+			return new IncidentResponse(incident, OperationStatus.Success);
 		}
 
 		public async Task<IncidentResponse> ResolveIncident(string resolvedBy, string incidentChannelId)
@@ -57,17 +57,17 @@ namespace SharpBotCore.Modules.IncidentManagement
 			var incident = await this.incidentStorage.GetIncidentByChannelId(incidentChannelId);
 			if (incident == null)
 			{
-				return new IncidentResponse(null, IncidentOperationStatus.NoIncidentForChannel);
+				return new IncidentResponse(null, OperationStatus.NoIncidentForChannel);
 			}
 
 			if (incident.Resolved && !incident.Closed)
 			{
-				return new IncidentResponse(null, IncidentOperationStatus.IncidentAlreadyResolved);
+				return new IncidentResponse(null, OperationStatus.IncidentAlreadyResolved);
 			}
 
 			if (incident.Resolved && incident.Closed)
 			{
-				return new IncidentResponse(null, IncidentOperationStatus.IncidentAlreadyClosed);
+				return new IncidentResponse(null, OperationStatus.IncidentAlreadyClosed);
 			}
 
 			incident.MarkAsResolved(resolvedBy);
@@ -77,7 +77,7 @@ namespace SharpBotCore.Modules.IncidentManagement
 			await this.SetChannelPurposeBasedOnIncidentStatus(incident);
 			await this.slackInteraction.SendIncidentResolvedMainChannelMessage(incident);
 
-			return new IncidentResponse(incident, IncidentOperationStatus.Success);
+			return new IncidentResponse(incident, OperationStatus.Success);
 		}
 
 		public async Task<IncidentResponse> AddPostmortemToIncident(string postmortemLink, string addedByUser, string incidentChannelId)
@@ -85,7 +85,7 @@ namespace SharpBotCore.Modules.IncidentManagement
 			var incident = await this.incidentStorage.GetIncidentByChannelId(incidentChannelId);
 			if (incident == null || incident.Closed)
 			{
-				return new IncidentResponse(null, IncidentOperationStatus.NoIncidentForChannel);
+				return new IncidentResponse(null, OperationStatus.NoIncidentForChannel);
 			}
 
 			incident.AddPostmortem(addedByUser, postmortemLink);
@@ -94,7 +94,7 @@ namespace SharpBotCore.Modules.IncidentManagement
 
 			await this.slackInteraction.SendIncidentPostmortemAddedMainChannelMessage(incident);
 
-			return new IncidentResponse(incident, IncidentOperationStatus.Success);
+			return new IncidentResponse(incident, OperationStatus.Success);
 		}
 
 		public async Task<IncidentResponse> CloseIncident(string resolvedBy, string incidentChannelId)
@@ -103,17 +103,17 @@ namespace SharpBotCore.Modules.IncidentManagement
 
 			if (incident == null)
 			{
-				return new IncidentResponse(null, IncidentOperationStatus.NoIncidentForChannel);
+				return new IncidentResponse(null, OperationStatus.NoIncidentForChannel);
 			}
 
 			if (!incident.Resolved)
 			{
-				return new IncidentResponse(null, IncidentOperationStatus.IncidentNotResolved);
+				return new IncidentResponse(null, OperationStatus.IncidentNotResolved);
 			}
 
 			if (!incident.PostmortemAdded)
 			{
-				return new IncidentResponse(null, IncidentOperationStatus.IncidentMissingPostmortem);
+				return new IncidentResponse(null, OperationStatus.IncidentMissingPostmortem);
 			}
 
 			incident.MarkAsClosed(resolvedBy);
@@ -125,7 +125,7 @@ namespace SharpBotCore.Modules.IncidentManagement
 
 			await this.slackInteraction.SendIncidentClosedMainChannelMessage(incident);
 
-			return new IncidentResponse(incident, IncidentOperationStatus.Success);
+			return new IncidentResponse(incident, OperationStatus.Success);
 		}
 
 		public async Task<Incident> GetIncidentById(Guid id)

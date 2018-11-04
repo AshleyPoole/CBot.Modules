@@ -11,7 +11,7 @@ namespace SharpBotCore.Modules.IncidentManagement
 			this IServiceCollection serviceCollection,
 			IConfigurationSection configuration)
 		{
-			serviceCollection.AddSingleton<IIncidentStorage, IncidentStorageClient>();
+			serviceCollection.AddSingleton<IIncidentStorage, StorageClient>();
 			serviceCollection.AddSingleton<IManageIncidents, IncidentManager>();
 			serviceCollection.AddSingleton<IRetrieveIncidents, IncidentManager>();
 			serviceCollection.AddSingleton<IMiddleware, IncidentManagementMiddleware>();

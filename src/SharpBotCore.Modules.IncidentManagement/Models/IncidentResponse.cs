@@ -2,7 +2,7 @@
 {
 	internal class IncidentResponse
 	{
-		public IncidentResponse(Incident incident, IncidentOperationStatus operationStatus)
+		public IncidentResponse(Incident incident, OperationStatus operationStatus)
 		{
 			this.Incident = incident;
 			this.OperationStatus = operationStatus;
@@ -10,6 +10,6 @@
 
 		public Incident Incident { get; }
 
-		public IncidentOperationStatus OperationStatus { get; }
+		public OperationStatus OperationStatus { get; }
 	}
 }

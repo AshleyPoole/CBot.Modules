@@ -10,11 +10,11 @@ using SharpBotCore.Modules.IncidentManagement.Models;
 
 namespace SharpBotCore.Modules.IncidentManagement
 {
-	internal class IncidentStorageClient : IIncidentStorage
+	internal class StorageClient : IIncidentStorage
 	{
 		private CloudTable incidentTable;
 
-		public IncidentStorageClient(ModuleConfiguration configuration)
+		public StorageClient(ModuleConfiguration configuration)
 		{
 			var storageAccount = CloudStorageAccount.Parse(configuration.AzureConnectionString);
 			var tableClient = storageAccount.CreateCloudTableClient();
