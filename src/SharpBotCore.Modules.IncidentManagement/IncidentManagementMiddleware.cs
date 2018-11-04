@@ -183,6 +183,8 @@ namespace SharpBotCore.Modules.IncidentManagement
 
 		private IEnumerable<ResponseMessage> ActiveIncidentsHandler(IncomingMessage incomingMessage, IHandler matchedHandle)
 		{
+			yield return incomingMessage.IndicateTypingOnChannel();
+
 			var activeIncidents = this.incidentManager.GetActiveIncidents().GetAwaiter().GetResult()
 				.OrderBy(x => x.DeclaredDateTimeUtc).ToList();
 
@@ -201,6 +203,8 @@ namespace SharpBotCore.Modules.IncidentManagement
 
 		private IEnumerable<ResponseMessage> RecentIncidentsHandler(IncomingMessage incomingMessage, IHandler matchedHandle)
 		{
+			yield return incomingMessage.IndicateTypingOnChannel();
+
 			var recentIncidents = this.incidentManager.GetRecentIncidents(pastDays: 10).GetAwaiter().GetResult()
 				.OrderBy(x => x.DeclaredDateTimeUtc).ToList();
 
