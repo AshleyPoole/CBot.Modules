@@ -6,8 +6,10 @@ namespace SharpBotCore.Modules.Cloudflare.API
 {
 	public interface ICloudflareApi
 	{
-		Task<ApiMultipleResourceResponse> GetRequest(string queryString);
+		Task<Zone> GetZoneByName(string zoneName);
 
-		Task<ApiSingleResourceResponse> DeleteRequest(string queryString, string requestBody);
+		Task<bool> PurgeZone(Zone zone);
+
+		Task<bool> PurgeZoneCacheTag(Zone zone, string cacheTag);
 	}
 }

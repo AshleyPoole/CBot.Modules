@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,7 +19,34 @@ namespace SharpBotCore.Modules.Cloudflare.API
 			this.configuration = configuration;
 		}
 
-		public async Task<ApiMultipleResourceResponse> GetRequest(string queryString)
+
+		public async Task<Zone> GetZoneByName(string zoneName)
+		{
+			var apiResponse = await this.GetRequest($"/zones?name={zoneName}");
+
+			if (apiResponse.Success && apiResponse.ResultInfo.Count == 1)
+			{
+				return apiResponse.Zone.First();
+			}
+
+			return null;
+		}
+
+		public async Task<bool> PurgeZone(Zone zone)
+		{
+			var deleteResponse = await this.DeleteRequest($"/zones/{zone.Id}/purge_cache", "{\"purge_everything\":true}");
+
+			return deleteResponse.Success;
+		}
+
+		public async Task<bool> PurgeZoneCacheTag(Zone zone, string cacheTag)
+		{
+			var deleteResponse = await this.DeleteRequest($"/zones/{zone.Id}/purge_cache", $"{{\"tags\":[\"{cacheTag}\"]}}");
+
+			return deleteResponse.Success;
+		}
+
+		private async Task<ApiMultipleResourceResponse> GetRequest(string queryString)
 		{
 			using (var handler = new HttpClientHandler())
 			{
@@ -34,7 +62,7 @@ namespace SharpBotCore.Modules.Cloudflare.API
 			}
 		}
 
-		public async Task<ApiSingleResourceResponse> DeleteRequest(string queryString, string requestBody)
+		private async Task<ApiSingleResourceResponse> DeleteRequest(string queryString, string requestBody)
 		{
 			using (var handler = new HttpClientHandler())
 			{
@@ -51,7 +79,9 @@ namespace SharpBotCore.Modules.Cloudflare.API
 
 					var request = await client.SendAsync(requestMessage);
 					var jsonString = await request.Content.ReadAsStringAsync();
-					return JsonConvert.DeserializeObject<ApiSingleResourceResponse>(jsonString, SerializerSettings.Settings);
+					return JsonConvert.DeserializeObject<ApiSingleResourceResponse>(
+						jsonString,
+						SerializerSettings.Settings);
 				}
 			}
 		}

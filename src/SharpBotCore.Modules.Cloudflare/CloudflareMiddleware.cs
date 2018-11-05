@@ -65,14 +65,14 @@ namespace SharpBotCore.Modules.Cloudflare
 		{
 			yield return incomingMessage.IndicateTypingOnChannel();
 
-			if (!CommandWellFormatted(incomingMessage.TargetedText, requiredCommandLength: 5))
+			if (!CommandWellFormatted(incomingMessage.TargetedText, requiredCommandLength: 6))
 			{
 				yield return incomingMessage.ReplyToChannel($"Sorry, you must provide a zone and cache tag in order to purge the cache. I.e {GetPurgeCacheTagHelpText()}.");
 				yield break;
 			}
 
-			var cacheTag = GetPositionalElementFromTargetText(incomingMessage.TargetedText, position: 5);
-			var zoneName = GetCleanZoneName(GetPositionalElementFromTargetText(incomingMessage.TargetedText, position: 3));
+			var cacheTag = GetPositionalElementFromTargetText(incomingMessage.TargetedText, position: 3);
+			var zoneName = GetCleanZoneName(GetPositionalElementFromTargetText(incomingMessage.TargetedText, position: 5));
 
 			var result = this.cloudflareManager.PurgeZoneCacheTag(zoneName, cacheTag, incomingMessage.Username).GetAwaiter().GetResult();
 
@@ -92,12 +92,13 @@ namespace SharpBotCore.Modules.Cloudflare
 
 		private static bool CommandWellFormatted(string message, int requiredCommandLength)
 		{
-			return message.Split(" ", StringSplitOptions.RemoveEmptyEntries).Length == requiredCommandLength;
+			var commandWordLength = message.Split(" ", StringSplitOptions.RemoveEmptyEntries).Length;
+			return commandWordLength == requiredCommandLength;
 		}
 
 		private static string GetPurgeCacheTagHelpText()
 		{
-			return $"`{Parameters.Purge} {Parameters.Cloudflare} zone ashleypoole.co.uk tag PROD-MyApp`";
+			return $"`{Parameters.Purge} {Parameters.Cloudflare} tag PROD-MyApp zone ashleypoole.co.uk `";
 		}
 
 		private static string GetPurgeZoneHelpText()

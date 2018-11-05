@@ -2,7 +2,7 @@
 {
 	public class CloudflareResponse
 	{
-		public CloudflareResponse(OperationStatus operationStatus, string zoneName, string zoneId)
+		public CloudflareResponse(OperationStatus operationStatus, string zoneName, string zoneId = null)
 		{
 			this.OperationStatus = operationStatus;
 			this.ZoneName = zoneName;
