@@ -197,7 +197,7 @@ namespace SharpBotCore.Modules.IncidentManagement
 			else
 			{
 				yield return incomingMessage.ReplyToChannel(
-					$"Great news! There's no active incidents. If you need to declare a new incident, run `{ this.DeclareIncidentExample() }`.");
+					$"Great news! There's no active incidents. If you need to declare a new incident, run { this.DeclareIncidentExample() }.");
 			}
 		}
 
@@ -217,7 +217,7 @@ namespace SharpBotCore.Modules.IncidentManagement
 			else
 			{
 				yield return incomingMessage.ReplyToChannel(
-					$"Great news! There's no recent incidents. If you need to declare a new incident, run `{ this.DeclareIncidentExample() }`.");
+					$"Great news! There's no recent incidents. If you need to declare a new incident, run { this.DeclareIncidentExample() }.");
 			}
 		}
 
@@ -266,8 +266,8 @@ namespace SharpBotCore.Modules.IncidentManagement
 
 		private static string GetIncidentText(string commandPrefix, string message) => message.Replace(commandPrefix, string.Empty).Trim();
 
-		private string DeclareIncidentExample() => $"@{{bot}} {this.declareIncidentCommand} Server is on fire";
+		private string DeclareIncidentExample() => $"`@{{bot}} {this.declareIncidentCommand} Server is on fire`";
 
-		private static string AddPostmortemExample => $"@{{bot}} {IncidentPostmortemCommand} https://mywebsite/postmortem/101";
+		private static string AddPostmortemExample => $"`@{{bot}} {IncidentPostmortemCommand} https://mywebsite/postmortem/101`";
 	}
 }
