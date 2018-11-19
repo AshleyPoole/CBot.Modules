@@ -44,3 +44,21 @@ Allows purging of Cloudflare cache for a given zone or a particular cache tag wi
 		"ApiUrl": "https://api.cloudflare.com/client/v4"
 	}
 ```
+
+## NewRelic Module
+
+Pulls application status from NewRelic.
+
+### Example Command(s)
+
+`@bot unhealthy newrelic applicataions`
+
+### Configuration
+
+```json
+"newrelic": {
+		"ApiUrl": "https://api.newrelic.com/v2/",
+		"ApiKey": "YOUR_API_KEY",
+		"ApplicationsAccountBaseUrl": "https://rpm.newrelic.com/accounts/YOUR_ACCOUNT_ID/applications/"
+	}
+```

@@ -51,7 +51,7 @@ namespace CBot.Modules.NewRelic.API
 
 		private HttpClient GetHttpClientWithBaseAddress()
 		{
-			var httpClient = new HttpClient { BaseAddress = new Uri("https://api.newrelic.com/v2/") };
+			var httpClient = new HttpClient { BaseAddress = new Uri(this.configuration.ApiUrl) };
 			httpClient.DefaultRequestHeaders.Add("X-API-Key", this.configuration.ApiKey);
 			return httpClient;
 		}

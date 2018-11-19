@@ -2,6 +2,8 @@
 {
 	public class ModuleConfiguration
 	{
+		public string ApiUrl { get; set; }
+
 		public string ApiKey { get; set; }
 
 		public string ApplicationsAccountBaseUrl { get; set; }

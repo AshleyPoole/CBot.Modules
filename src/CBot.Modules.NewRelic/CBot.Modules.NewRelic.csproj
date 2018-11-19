@@ -3,11 +3,11 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <PackageId>CBot.Modules.NewRelic</PackageId>
-    <PackageVersion>1.0.1</PackageVersion>
+    <PackageVersion>1.0.2</PackageVersion>
     <Authors>Ashley Poole</Authors>
     <Description>NewRelic module for CBot framework</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>Initial release.</PackageReleaseNotes>
+    <PackageReleaseNotes>Add NewRelic APM link to config.</PackageReleaseNotes>
     <PackageTags>CBot.Modules CBot NewRelic csharpbot chatops chatbot bot</PackageTags>
     <PackageProjectUrl>https://github.com/AshleyPoole/CBot.Modules</PackageProjectUrl>
     <RepositoryUrl>https://github.com/AshleyPoole/CBot.Modules</RepositoryUrl>
