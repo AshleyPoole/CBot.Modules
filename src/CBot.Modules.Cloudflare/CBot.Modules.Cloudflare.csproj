@@ -3,11 +3,11 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <PackageId>CBot.Modules.Cloudflare</PackageId>
-    <PackageVersion>1.0.1</PackageVersion>
+    <PackageVersion>1.0.2</PackageVersion>
     <Authors>Ashley Poole</Authors>
     <Description>Cloudflare module for CBot framework</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>Added package description.</PackageReleaseNotes>
+    <PackageReleaseNotes>Minor text changes.</PackageReleaseNotes>
     <PackageTags>CBot.Modules CBot Cloudflare CloudflareCache csharpbot chatops chatbot bot</PackageTags>
     <PackageProjectUrl>https://github.com/AshleyPoole/CBot.Modules</PackageProjectUrl>
     <RepositoryUrl>https://github.com/AshleyPoole/CBot.Modules</RepositoryUrl>

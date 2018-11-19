@@ -98,7 +98,7 @@ namespace CBot.Modules.Cloudflare
 
 		private static string GetPurgeCacheTagHelpText()
 		{
-			return $"`{Parameters.Purge} {Parameters.Cloudflare} tag PROD-MyApp zone ashleypoole.co.uk `";
+			return $"`{Parameters.Purge} {Parameters.Cloudflare} tag PROD-MyApp zone ashleypoole.co.uk`";
 		}
 
 		private static string GetPurgeZoneHelpText()
