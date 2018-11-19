@@ -24,6 +24,5 @@ namespace CBot.Modules.IncidentManagement
 
 			return serviceCollection;
 		}
-
 	}
 }

@@ -47,7 +47,7 @@ namespace CBot.Modules.IncidentManagement
 										},
 										new HandlerMapping
 										{
-											Handlers = StartsWithHandler.For($"{IncidentPostmortemCommand}"),
+											Handlers = StartsWithHandler.For(IncidentPostmortemCommand),
 											EvaluatorFunc = this.AddPostmortemToIncidentHandler,
 											Description = $"Adds the postmortem link to the incident associated with current channel. Ie. {AddPostmortemExample}",
 											VisibleInHelp = true
@@ -134,6 +134,7 @@ namespace CBot.Modules.IncidentManagement
 			if (!IncidentCommandWellFormatted(incomingMessage.TargetedText))
 			{
 				yield return incomingMessage.ReplyToChannel($"Please provide the postmortem link. I.e `{AddPostmortemExample}`");
+				yield break;
 			}
 
 			var postmortemLink = GetIncidentText(IncidentPostmortemCommand, incomingMessage.TargetedText);
