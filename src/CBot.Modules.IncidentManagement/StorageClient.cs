@@ -162,7 +162,11 @@ namespace CBot.Modules.IncidentManagement
 				var incidentsQuery = await this.incidentTable.ExecuteQuerySegmentedAsync(query, token);
 				token = incidentsQuery.ContinuationToken;
 
-				return incidentsQuery.Results;
+				// TODO: MOVE THIS INTO A FILTER
+				var results = incidentsQuery.Results;
+				results.RemoveAll(x => x.Deleted);
+
+				return results;
 
 			} while (token != null);
 		}

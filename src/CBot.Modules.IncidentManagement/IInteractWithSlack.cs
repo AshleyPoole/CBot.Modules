@@ -16,6 +16,10 @@ namespace CBot.Modules.IncidentManagement
 
 		Task SendIncidentClosedMainChannelMessage(Incident incident);
 
+		Task SendIncidentForcedClosedMainChannelMessage(Incident incident);
+
+		Task SendIncidentDeletedMainChannelMessage(Incident incident);
+
 		Task SendIncidentBoundMessageToChannel(Incident incident);
 
 		Task UpdateChannelTopic(string channelId, string topic);

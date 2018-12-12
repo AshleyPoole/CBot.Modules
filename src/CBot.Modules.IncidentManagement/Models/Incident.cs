@@ -66,34 +66,49 @@ namespace CBot.Modules.IncidentManagement.Models
 		[DisplayName("Closed Timestamp")]
 		public DateTime? ClosedDateTimeUtc { get; set; }
 
+		[DisplayName("Forced Closed")]
+		public bool ForceClosed { get; set; }
+
+		public bool Deleted { get; set; }
+
 		[DisplayName("Id")]
 		public string FriendlyId => $"{this.PartitionKey}-{this.RowKey}";
 
 		public bool PostmortemAdded => !string.IsNullOrWhiteSpace(this.PostmortermLink);
+
+		public string CleanPostmortemLink => this.PostmortermLink.Replace("<", string.Empty).Replace(">", string.Empty);
 
 		[DisplayName("Status")]
 		public string FriendlyStatus
 		{
 			get
 			{
-				var incidentStatus = "UNKNOWN";
+				if (this.ForceClosed)
+				{
+					return "FORCE CLOSED";
+				}
+
+				if (this.Deleted)
+				{
+					return "DELETED";
+				}
 
 				if (!this.Resolved && !this.Closed)
 				{
-					incidentStatus = "IN-PROGRESS";
+					return "IN-PROGRESS";
 				}
 
 				if (this.Resolved && !this.Closed)
 				{
-					incidentStatus = "MITIGATED";
+					return "MITIGATED";
 				}
 
 				if (this.Resolved && this.Closed)
 				{
-					incidentStatus = "CLOSED";
+					return "CLOSED";
 				}
 
-				return incidentStatus;
+				return "UNKNOWN";
 			}
 		}
 
@@ -116,6 +131,18 @@ namespace CBot.Modules.IncidentManagement.Models
 			this.ClosedDateTimeUtc = DateTime.UtcNow;
 			this.ClosedBy = closedBy;
 			this.Closed = true;
+		}
+
+		public void MarkAsForcedClosed(string closedBy)
+		{
+			this.MarkAsClosed(closedBy);
+			this.ForceClosed = true;
+		}
+
+		public void MarkAsDeleted(string deletedBy)
+		{
+			this.MarkAsClosed(deletedBy);
+			this.Deleted = true;
 		}
 
 		public void SetRowKey(int rowKey)

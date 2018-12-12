@@ -54,7 +54,7 @@ namespace CBot.Modules.IncidentManagement
 							Title = "Resolved Timestamp",
 							Value = $"{string.Format("{0:s}", incident.ResolvedDateTimeUtc)} UTC"
 						},
-						new AttachmentField { IsShort = true, Title = "Resolved By", Value = $@"{incident.ResolvedBy}" }
+						new AttachmentField { IsShort = true, Title = "Resolved By", Value = $"@{incident.ResolvedBy}" }
 					};
 		}
 

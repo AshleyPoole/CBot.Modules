@@ -12,6 +12,10 @@
 
 		public static string ClosedIncidentColor = "#A643E0";
 
+		public static string ForcedClosedIncidentColor = "#6901a5";
+
+		public static string DeletedIncidentColur = "#444444";
+
 		public static string Whitespace = " ";
 	}
 }

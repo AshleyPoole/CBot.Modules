@@ -16,7 +16,11 @@ namespace CBot.Modules.IncidentManagement
 			string addedByUser,
 			string incidentChannelId);
 
-		Task<IncidentResponse> CloseIncident(string resolvedBy, string incidentChannelId);
+		Task<IncidentResponse> CloseIncident(string closedBy, string incidentChannelId);
+
+		Task<IncidentResponse> ForceCloseIncident(string closedBy, string incidentChannelId);
+
+		Task<IncidentResponse> DeleteIncident(string deletedBy, string incidentChannelId);
 
 		Task<List<Incident>> GetActiveIncidents();
 

@@ -101,6 +101,44 @@ namespace CBot.Modules.IncidentManagement
 			await this.slackConnection.Say(message);
 		}
 
+		public async Task SendIncidentForcedClosedMainChannelMessage(Incident incident)
+		{
+			var attachmentFields = AttachmentGenerator.GetSlackCoreAttachmentFields(incident);
+			attachmentFields.AddRange(AttachmentGenerator.GetSlackResolvedAttachmentFields(incident));
+			attachmentFields.AddRange(AttachmentGenerator.GetSlackPostmortemAttachmentFields(incident));
+			attachmentFields.AddRange(AttachmentGenerator.GetSlackClosedAttachmentFields(incident));
+
+			var chatHub = new SlackChatHub { Id = this.configuration.IncidentNotificationChannel };
+			var attachment = new SlackAttachment { Fields = attachmentFields, ColorHex = Parameters.ForcedClosedIncidentColor };
+
+			var message = new BotMessage
+						{
+							ChatHub = chatHub,
+							Text = $"*INCIDENT FORCED CLOSED #{incident.FriendlyId}*",
+							Attachments = new List<SlackAttachment> { attachment }
+						};
+
+			await this.slackConnection.Say(message);
+		}
+
+		public async Task SendIncidentDeletedMainChannelMessage(Incident incident)
+		{
+			var attachmentFields = AttachmentGenerator.GetSlackCoreAttachmentFields(incident);
+			attachmentFields.AddRange(AttachmentGenerator.GetSlackClosedAttachmentFields(incident));
+
+			var chatHub = new SlackChatHub { Id = this.configuration.IncidentNotificationChannel };
+			var attachment = new SlackAttachment { Fields = attachmentFields, ColorHex = Parameters.DeletedIncidentColur };
+
+			var message = new BotMessage
+						{
+							ChatHub = chatHub,
+							Text = $"*INCIDENT DELETED #{incident.FriendlyId}*",
+							Attachments = new List<SlackAttachment> { attachment }
+						};
+
+			await this.slackConnection.Say(message);
+		}
+
 		public async Task UpdateChannelTopic(string channelId, string topic)
 		{
 			await this.slackConnection.SetChannelTopic(channelId, topic);

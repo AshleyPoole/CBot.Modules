@@ -23,6 +23,10 @@ namespace CBot.Modules.IncidentManagement
 
 		private readonly string closeIncidentCommand = $"close {Parameters.Incident}";
 
+		private readonly string forceCloseIncidentCommand = $"force close {Parameters.Incident}";
+
+		private readonly string deleteIncidentCommand = $"delete {Parameters.Incident}";
+
 		public IncidentManagementMiddleware(IManageIncidents incidentManager, ModuleConfiguration configuration)
 		{
 			this.incidentManager = incidentManager;
@@ -58,6 +62,20 @@ namespace CBot.Modules.IncidentManagement
 											EvaluatorFunc = this.CloseIncidentHandler,
 											Description = "Close the incident associated with current channel.",
 											VisibleInHelp = true
+										},
+										new HandlerMapping
+										{
+											Handlers = ExactMatchHandler.For($"{this.forceCloseIncidentCommand}"),
+											EvaluatorFunc = this.ForceCloseIncidentHandler,
+											Description = "Force closes the incident associated with current channel.",
+											VisibleInHelp = false
+										},
+										new HandlerMapping
+										{
+											Handlers = ExactMatchHandler.For($"{this.deleteIncidentCommand}"),
+											EvaluatorFunc = this.DeleteIncidentHandler,
+											Description = "Deletes the incident associated with current channel.",
+											VisibleInHelp = false
 										},
 										new HandlerMapping
 										{
@@ -175,6 +193,46 @@ namespace CBot.Modules.IncidentManagement
 					break;
 				case OperationStatus.IncidentMissingPostmortem:
 					yield return incomingMessage.ReplyToChannel("The incident cannot be closed as no postmortem has been added.");
+					break;
+				default:
+					yield return incomingMessage.ReplyToChannel("No open incident was found associated to this channel.");
+					break;
+			}
+		}
+
+		private IEnumerable<ResponseMessage> ForceCloseIncidentHandler(IncomingMessage incomingMessage, IHandler matchedHandle)
+		{
+			yield return incomingMessage.IndicateTypingOnChannel();
+
+			var incidentRequest = this.incidentManager.ForceCloseIncident(incomingMessage.Username, incomingMessage.Channel).GetAwaiter()
+				.GetResult();
+
+			switch (incidentRequest.OperationStatus)
+			{
+				case OperationStatus.Success:
+					yield return incomingMessage.ReplyToChannel(
+						$"Incident #{incidentRequest.Incident.FriendlyId} has been successfully been forced closed. Please the ensure the postmortem is complete if applicable ({incidentRequest.Incident.PostmortermLink}).\n" 
+						+ "This channel will now be marked as available ready for the next incident.");
+					break;
+				default:
+					yield return incomingMessage.ReplyToChannel("No open incident was found associated to this channel.");
+					break;
+			}
+		}
+
+		private IEnumerable<ResponseMessage> DeleteIncidentHandler(IncomingMessage incomingMessage, IHandler matchedHandle)
+		{
+			yield return incomingMessage.IndicateTypingOnChannel();
+
+			var incidentRequest = this.incidentManager.DeleteIncident(incomingMessage.Username, incomingMessage.Channel).GetAwaiter()
+				.GetResult();
+
+			switch (incidentRequest.OperationStatus)
+			{
+				case OperationStatus.Success:
+					yield return incomingMessage.ReplyToChannel(
+						$"Incident #{incidentRequest.Incident.FriendlyId} has been successfully been deleted. " 
+						+ "This channel will now be marked as available ready for the next incident.");
 					break;
 				default:
 					yield return incomingMessage.ReplyToChannel("No open incident was found associated to this channel.");

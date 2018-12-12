@@ -97,7 +97,7 @@ namespace CBot.Modules.IncidentManagement
 			return new IncidentResponse(incident, OperationStatus.Success);
 		}
 
-		public async Task<IncidentResponse> CloseIncident(string resolvedBy, string incidentChannelId)
+		public async Task<IncidentResponse> CloseIncident(string closedBy, string incidentChannelId)
 		{
 			var incident = await this.incidentStorage.GetIncidentByChannelId(incidentChannelId);
 
@@ -116,7 +116,7 @@ namespace CBot.Modules.IncidentManagement
 				return new IncidentResponse(null, OperationStatus.IncidentMissingPostmortem);
 			}
 
-			incident.MarkAsClosed(resolvedBy);
+			incident.MarkAsClosed(closedBy);
 
 			await this.incidentStorage.UpdateIncident(incident);
 
@@ -124,6 +124,48 @@ namespace CBot.Modules.IncidentManagement
 			await this.SetChannelTopicBasedOnIncidentStatus(incident);
 
 			await this.slackInteraction.SendIncidentClosedMainChannelMessage(incident);
+
+			return new IncidentResponse(incident, OperationStatus.Success);
+		}
+
+		public async Task<IncidentResponse> ForceCloseIncident(string closedBy, string incidentChannelId)
+		{
+			var incident = await this.incidentStorage.GetIncidentByChannelId(incidentChannelId);
+
+			if (incident == null)
+			{
+				return new IncidentResponse(null, OperationStatus.NoIncidentForChannel);
+			}
+
+			incident.MarkAsForcedClosed(closedBy);
+
+			await this.incidentStorage.UpdateIncident(incident);
+
+			await this.SetChannelPurposeBasedOnIncidentStatus(incident);
+			await this.SetChannelTopicBasedOnIncidentStatus(incident);
+
+			await this.slackInteraction.SendIncidentForcedClosedMainChannelMessage(incident);
+
+			return new IncidentResponse(incident, OperationStatus.Success);
+		}
+
+		public async Task<IncidentResponse> DeleteIncident(string deletedBy, string incidentChannelId)
+		{
+			var incident = await this.incidentStorage.GetIncidentByChannelId(incidentChannelId);
+
+			if (incident == null)
+			{
+				return new IncidentResponse(null, OperationStatus.NoIncidentForChannel);
+			}
+
+			incident.MarkAsDeleted(deletedBy);
+
+			await this.incidentStorage.UpdateIncident(incident);
+
+			await this.SetChannelPurposeBasedOnIncidentStatus(incident);
+			await this.SetChannelTopicBasedOnIncidentStatus(incident);
+
+			await this.slackInteraction.SendIncidentDeletedMainChannelMessage(incident);
 
 			return new IncidentResponse(incident, OperationStatus.Success);
 		}
@@ -161,7 +203,7 @@ namespace CBot.Modules.IncidentManagement
 
 		private async Task SetChannelPurposeBasedOnIncidentStatus(Incident incident)
 		{
-			var purpose = incident.Resolved && incident.Closed
+			var purpose = (incident.Resolved && incident.Closed) || incident.ForceClosed || incident.Deleted
 							? $"Incident Warroom -- No active incident bound"
 							: $"INCIDENT #{incident.FriendlyId} -- {incident.FriendlyStatus} -- {incident.Title}";
 
@@ -170,11 +212,11 @@ namespace CBot.Modules.IncidentManagement
 
 		private async Task SetChannelTopicBasedOnIncidentStatus(Incident incident)
 		{
-			var topic = incident.Resolved && incident.Closed
+			var topic = (incident.Resolved && incident.Closed) || incident.ForceClosed || incident.Deleted
 							? Parameters.Whitespace
 							: $"INCIDENT #{incident.FriendlyId}";
 
 			await this.slackInteraction.UpdateChannelTopic(incident.ChannelId, topic);
 		}
-	}
+    }
 }
