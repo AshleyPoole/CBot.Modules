@@ -7,7 +7,7 @@
     <Authors>Ashley Poole</Authors>
     <Description>Incident Management module for CBot framework. Allows incidents to be declared and tracked using Azure storage.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>Added ability to force close and delete incidents. Also minor text updates for Slack and added CleanPostmortemLink to Incident model.</PackageReleaseNotes>
+    <PackageReleaseNotes>Corrected helper text when a new incident is declared.</PackageReleaseNotes>
     <PackageTags>CBot.Modules CBot Incident IncidentManagement IncidentResponse csharpbot chatops chatbot bot</PackageTags>
     <PackageProjectUrl>https://github.com/AshleyPoole/CBot.Modules</PackageProjectUrl>
     <RepositoryUrl>https://github.com/AshleyPoole/CBot.Modules</RepositoryUrl>

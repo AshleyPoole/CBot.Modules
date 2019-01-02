@@ -11,15 +11,15 @@ namespace CBot.Modules.IncidentManagement
 {
 	internal class IncidentManagementMiddleware : MiddlewareBase
 	{
+		public static readonly string MitigatedIncidentCommand = $"{Parameters.Incident} mitigated";
+
 		private readonly IManageIncidents incidentManager;
 
 		private readonly ModuleConfiguration configuration;
 
 		private readonly string declareIncidentCommand = $"new {Parameters.Incident}";
 
-		private readonly string mitigatedIncidentCommand = $"{Parameters.Incident} mitigated";
-
-		private static readonly string IncidentPostmortemCommand = $"{Parameters.Incident} postmortem";
+		private static readonly string IncidentPostmortemCommand = $"{Parameters.Incident} postmortem"; 
 
 		private readonly string closeIncidentCommand = $"close {Parameters.Incident}";
 
@@ -44,7 +44,7 @@ namespace CBot.Modules.IncidentManagement
 										},
 										new HandlerMapping
 										{
-											Handlers = ExactMatchHandler.For(this.mitigatedIncidentCommand),
+											Handlers = ExactMatchHandler.For(this.MitigatedIncidentCommand),
 											EvaluatorFunc = this.MitigateIncidentHandler,
 											Description = "Marks the open incident associated with current channel as mitigated.",
 											VisibleInHelp = true
