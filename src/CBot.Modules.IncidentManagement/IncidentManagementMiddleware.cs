@@ -44,7 +44,7 @@ namespace CBot.Modules.IncidentManagement
 										},
 										new HandlerMapping
 										{
-											Handlers = ExactMatchHandler.For(this.MitigatedIncidentCommand),
+											Handlers = ExactMatchHandler.For(MitigatedIncidentCommand),
 											EvaluatorFunc = this.MitigateIncidentHandler,
 											Description = "Marks the open incident associated with current channel as mitigated.",
 											VisibleInHelp = true
