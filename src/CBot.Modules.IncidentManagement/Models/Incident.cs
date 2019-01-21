@@ -76,7 +76,10 @@ namespace CBot.Modules.IncidentManagement.Models
 
 		public bool PostmortemAdded => !string.IsNullOrWhiteSpace(this.PostmortermLink);
 
-		public string CleanPostmortemLink => this.PostmortermLink.Replace("<", string.Empty).Replace(">", string.Empty);
+		public string CleanPostmortemLink =>
+			string.IsNullOrEmpty(this.PostmortermLink)
+				? string.Empty
+				: this.PostmortermLink.Replace("<", string.Empty).Replace(">", string.Empty);
 
 		[DisplayName("Status")]
 		public string FriendlyStatus
