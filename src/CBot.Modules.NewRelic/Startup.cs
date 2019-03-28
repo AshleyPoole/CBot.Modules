@@ -16,10 +16,26 @@ namespace CBot.Modules.NewRelic
 			serviceCollection.AddTransient<IManageNewRelic, NewRelicManager>();
 			serviceCollection.AddSingleton<IMiddleware, NewRelicMiddleware>();
 
-			var moduleConfig = new ModuleConfiguration();
-			configuration.Bind(moduleConfig);
+			var apiUrl = configuration.GetValue<string>("ApiUrl");
+			var applicationsAccountBaseUrl = configuration.GetValue<string>("ApplicationsAccountBaseUrl");
 
-			serviceCollection.AddSingleton(moduleConfig);
+			foreach (var newRelicAccountConfig in configuration.GetValue<string>("Accounts").Split('|'))
+			{
+				var accountParts = newRelicAccountConfig.Split(',');
+				var accountId = accountParts[0];
+				var apiKey = accountParts[1];
+				var accountName = accountParts[2];
+				bool.TryParse(accountParts[3], out bool isDefault);
+
+				serviceCollection.AddSingleton(new ModuleConfiguration
+				{
+					AccountName = accountName,
+					IsDefault = isDefault,
+					ApiKey = apiKey,
+					ApiUrl = apiUrl,
+					ApplicationsAccountBaseUrl = applicationsAccountBaseUrl.Replace("{accountId}", accountId)
+				});
+			}
 
 			return serviceCollection;
 		}

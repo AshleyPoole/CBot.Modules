@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <PackageId>CBot.Modules.NewRelic</PackageId>
-    <PackageVersion>1.0.2</PackageVersion>
+    <PackageVersion>1.0.3</PackageVersion>
     <Authors>Ashley Poole</Authors>
     <Description>NewRelic module for CBot framework</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>

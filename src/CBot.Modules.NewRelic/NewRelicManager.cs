@@ -21,13 +21,18 @@ namespace CBot.Modules.NewRelic
 			this.logger = logger;
 		}
 
-		public async Task<NewRelicResponse> GetAllApplications()
+		public IEnumerable<string> GetAccountNames()
+		{
+			return newRelicApi.GetAccountNames();
+		}
+
+		public async Task<NewRelicResponse> GetAllApplications(string accountName = null)
 		{
 			IEnumerable<Application> newRelicApplications;
 
 			try
 			{
-				newRelicApplications = await this.newRelicApi.GetAllApplicationsSummary();
+				newRelicApplications = await this.newRelicApi.GetAllApplicationsSummary(accountName);
 			}
 			catch (Exception e)
 			{
@@ -39,13 +44,13 @@ namespace CBot.Modules.NewRelic
 			
 		}
 
-		public async Task<NewRelicResponse> GetUnhealthyApplications()
+		public async Task<NewRelicResponse> GetUnhealthyApplications(string accountName = null)
 		{
 			IList<Application> unhealthyApplications;
 
 			try
 			{
-				unhealthyApplications = (await this.newRelicApi.GetAllApplicationsSummary())
+				unhealthyApplications = (await this.newRelicApi.GetAllApplicationsSummary(accountName))
 					.Where(x => x.HealthStatus == Parameters.NewRelicBadStatus).ToList();
 			}
 			catch (Exception e)
@@ -57,13 +62,13 @@ namespace CBot.Modules.NewRelic
 			return new NewRelicResponse(unhealthyApplications, OperationStatus.Success);
 		}
 
-		public async Task<NewRelicResponse> GetApplicationsLikeName(string searchPattern)
+		public async Task<NewRelicResponse> GetApplicationsLikeName(string searchPattern, string accountName = null)
 		{
 			const string WildcardCharacter = "%";
 			List<Application> filteredApplications;
 
 			var applicationNameForChecking = searchPattern.Replace(WildcardCharacter, string.Empty).ToLower();
-			var allApplications = await this.newRelicApi.GetFilteredApplicationsSummaryByName(applicationNameForChecking);
+			var allApplications = await this.newRelicApi.GetFilteredApplicationsSummaryByName(applicationNameForChecking, accountName);
 
 			if (searchPattern.StartsWith(WildcardCharacter) && searchPattern.EndsWith(WildcardCharacter))
 			{
