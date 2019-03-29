@@ -65,16 +65,27 @@ namespace CBot.Modules.NewRelic.API
 			ModuleConfiguration configuration;
 			if (string.IsNullOrWhiteSpace(accountName))
 			{
-				configuration = configurations.First(c => c.IsDefault);
+				configuration = configurations.FirstOrDefault(c => c.IsDefault);
 			}
 			else
 			{
-				configuration = configurations.First(c => c.AccountName.Equals(accountName, StringComparison.InvariantCultureIgnoreCase));
+				configuration = configurations.FirstOrDefault(c => c.AccountName.Equals(accountName, StringComparison.InvariantCultureIgnoreCase));
 			}
 
 			if (configuration is null)
 			{
-				logger.LogError($"Failed to find New Relic account by name: {accountName}");
+				var errorMessage = string.Empty;
+				if (string.IsNullOrWhiteSpace(accountName))
+				{
+					errorMessage = "No default New Relic configuration was found.";
+				}
+				else
+				{
+					errorMessage = $"No New Relic configuration was found by name {accountName}";
+				}
+
+				logger.LogError(errorMessage);
+				throw new Exception(errorMessage);
 			}
 
 			var httpClient = new HttpClient { BaseAddress = new Uri(configuration.ApiUrl) };
