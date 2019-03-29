@@ -51,7 +51,7 @@ Pulls application status from NewRelic.
 
 ### Example Command(s)
 
-`@bot unhealthy newrelic applicataions account`
+`@bot unhealthy newrelic applications account`
 
 ### Configuration
 
