@@ -19,8 +19,6 @@ namespace CBot.Modules.NewRelic
 
 		private static readonly string AllApplicationsCommand = $"{Parameters.NewRelic} applications";
 
-		private static readonly string AllApplicationsDetailCommand = $"{Parameters.NewRelic} all detail";
-
 		private static readonly string UnhealthyApplicationsCommand = $"unhealthy {Parameters.NewRelic} applications";
 
 		private static readonly string ApplicationDetailCommand = $"{Parameters.NewRelic} application detail";
@@ -33,15 +31,14 @@ namespace CBot.Modules.NewRelic
 									{
 										new HandlerMapping
 										{
-											Handlers = StartsWithHandler.For(AllApplicationsCommand),
+											Handlers = new IHandler[] { new RegexHandler($"^{AllApplicationsCommand}(?:\\s+(?!detail)\\w+)?$", AllApplicationsCommand) },
 											EvaluatorFunc = this.AllApplicationsHandler,
 											Description = $"Gets all applications from NewRelic for the given account name. If no account name is specified, the default will be used.",
 											VisibleInHelp = true
 										},
 										new HandlerMapping
 										{
-											Handlers =
-												StartsWithHandler.For(AllApplicationsDetailCommand),
+											Handlers = new IHandler[] { new RegexHandler($"^{AllApplicationsCommand} detail(?:\\s+\\w+)?$", $"{AllApplicationsCommand} detail") },
 											EvaluatorFunc = this.ApplicationsDetailHandler,
 											Description =
 												$"Gets all applications from NewRelic with detailed health information for the given account name. If no account name is specified, the default will be used. {GetAllApplicationsDetailExample}",
@@ -385,7 +382,7 @@ namespace CBot.Modules.NewRelic
 
 		private static string GetAllApplicationsExample => $"`@{{bot}} {AllApplicationsCommand} staging`";
 
-		private static string GetAllApplicationsDetailExample => $"`@{{bot}} {AllApplicationsDetailCommand} staging`";
+		private static string GetAllApplicationsDetailExample => $"`@{{bot}} {AllApplicationsCommand} detail staging`";
 
 		private static string GetUnhealthyApplicationsExample => $"`@{{bot}} {UnhealthyApplicationsCommand} staging`";
 
