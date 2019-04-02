@@ -33,7 +33,7 @@ namespace CBot.Modules.NewRelic
 										{
 											Handlers = new IHandler[] { new RegexHandler($"^{AllApplicationsCommand}(?:\\s+(?!detail)\\w+)?$", AllApplicationsCommand) },
 											EvaluatorFunc = this.AllApplicationsHandler,
-											Description = $"Gets all applications from NewRelic for the given account name. If no account name is specified, the default will be used.",
+											Description = $"Gets all applications from NewRelic for the given account name. If no account name is specified, the default will be used. {GetAllApplicationsExample}",
 											VisibleInHelp = true
 										},
 										new HandlerMapping
