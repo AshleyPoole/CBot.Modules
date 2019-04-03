@@ -7,8 +7,10 @@ namespace CBot.Modules.NewRelic.API
 {
 	public interface INewRelicApi
 	{
-		Task<IEnumerable<Application>> GetAllApplicationsSummary();
+		IEnumerable<string> GetAccountNames();
 
-		Task<IEnumerable<Application>> GetFilteredApplicationsSummaryByName(string searchTerm);
+		Task<IEnumerable<Application>> GetAllApplicationsSummary(string accountName);
+
+		Task<IEnumerable<Application>> GetFilteredApplicationsSummaryByName(string searchTerm, string accountName);
 	}
 }

@@ -17,6 +17,10 @@ namespace CBot.Modules.NewRelic
 
 		private readonly IManageNewRelic newRelicManager;
 
+		private static readonly string AllApplicationsCommand = $"{Parameters.NewRelic} applications";
+
+		private static readonly string UnhealthyApplicationsCommand = $"unhealthy {Parameters.NewRelic} applications";
+
 		private static readonly string ApplicationDetailCommand = $"{Parameters.NewRelic} application detail";
 
 		public NewRelicMiddleware(IManageNewRelic newRelicManager)
@@ -27,27 +31,26 @@ namespace CBot.Modules.NewRelic
 									{
 										new HandlerMapping
 										{
-											Handlers = ExactMatchHandler.For($"{Parameters.NewRelic} applications"),
+											Handlers = new IHandler[] { new RegexHandler($"^{AllApplicationsCommand}(?:\\s+(?!detail)\\w+)?$", AllApplicationsCommand) },
 											EvaluatorFunc = this.AllApplicationsHandler,
-											Description = "Gets all applications from NewRelic.",
+											Description = $"Gets all applications from NewRelic for the given account name. If no account name is specified, the default will be used. {GetAllApplicationsExample}",
 											VisibleInHelp = true
 										},
 										new HandlerMapping
 										{
-											Handlers =
-												ExactMatchHandler.For($"{Parameters.NewRelic} applications detail"),
+											Handlers = new IHandler[] { new RegexHandler($"^{AllApplicationsCommand} detail(?:\\s+\\w+)?$", $"{AllApplicationsCommand} detail") },
 											EvaluatorFunc = this.ApplicationsDetailHandler,
 											Description =
-												"Gets all applications from NewRelic with detailed health information.",
+												$"Gets all applications from NewRelic with detailed health information for the given account name. If no account name is specified, the default will be used. {GetAllApplicationsDetailExample}",
 											VisibleInHelp = true
 										},
 										new HandlerMapping
 										{
 											Handlers =
-												ExactMatchHandler.For($"unhealthy {Parameters.NewRelic} applications"),
+												StartsWithHandler.For(UnhealthyApplicationsCommand),
 											EvaluatorFunc = this.UnhealthyApplicationsHandler,
 											Description =
-												"Gets all unhealthy applications from NewRelic including detailed health information.",
+												$"Gets all unhealthy applications from NewRelic including detailed health information for the given account name. If no account name is specified, the default will be used. {GetUnhealthyApplicationsExample}",
 											VisibleInHelp = true
 										},
 										new HandlerMapping
@@ -56,7 +59,7 @@ namespace CBot.Modules.NewRelic
 												StartsWithHandler.For(ApplicationDetailCommand),
 											EvaluatorFunc = this.ApplicationDetailFilteredHandler,
 											Description =
-												$"Gets application detail for one or more applications from NewRelic based on pattern. I.e {GetApplicationDetailExample}",
+												$"Gets application detail for one or more applications from NewRelic based on pattern for the given account name. If no account name is specified, the default will be used. I.e {GetApplicationDetailExample}",
 											VisibleInHelp = true
 										},
 									};
@@ -74,9 +77,17 @@ namespace CBot.Modules.NewRelic
 				yield break;
 			}
 
-			var searchTerm = incomingMessage.TargetedText.Split(" ", StringSplitOptions.RemoveEmptyEntries)[3];
+			var messageText = incomingMessage.TargetedText.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+			var searchTerm = messageText[3];
+
+			var accountName = string.Empty;
+			if (messageText.Length == 5)
+			{
+				accountName = messageText[4];
+			}
+
 			var newRelicApplicationsRelicResponse = this.newRelicManager
-				.GetApplicationsLikeName(searchTerm).GetAwaiter().GetResult();
+				.GetApplicationsLikeName(searchTerm, accountName).GetAwaiter().GetResult();
 
 			if (newRelicApplicationsRelicResponse.OperationStatus == OperationStatus.Success
 				&& !newRelicApplicationsRelicResponse.Applications.Any())
@@ -106,8 +117,15 @@ namespace CBot.Modules.NewRelic
 		{
 			incomingMessage.IndicateTypingOnChannel();
 
+			var messageText = incomingMessage.TargetedText.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+			var accountName = string.Empty;
+			if (messageText.Length == 4)
+			{
+				accountName = messageText[3];
+			}
+
 			var newRelicApplicationsRelicResponse =
-				this.newRelicManager.GetUnhealthyApplications().GetAwaiter().GetResult();
+				this.newRelicManager.GetUnhealthyApplications(accountName).GetAwaiter().GetResult();
 
 			if (newRelicApplicationsRelicResponse.OperationStatus == OperationStatus.Success
 				&& !newRelicApplicationsRelicResponse.Applications.Any())
@@ -137,7 +155,14 @@ namespace CBot.Modules.NewRelic
 		{
 			incomingMessage.IndicateTypingOnChannel();
 
-			var newRelicApplicationsRelicResponse = this.newRelicManager.GetAllApplications().GetAwaiter().GetResult();
+			var messageText = incomingMessage.TargetedText.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+			var accountName = string.Empty;
+			if (messageText.Length == 4)
+			{
+				accountName = messageText[3];
+			}
+
+			var newRelicApplicationsRelicResponse = this.newRelicManager.GetAllApplications(accountName).GetAwaiter().GetResult();
 
 			if (newRelicApplicationsRelicResponse.OperationStatus == OperationStatus.Success
 				&& !newRelicApplicationsRelicResponse.Applications.Any())
@@ -167,7 +192,14 @@ namespace CBot.Modules.NewRelic
 		{
 			incomingMessage.IndicateTypingOnChannel();
 
-			var newRelicApplicationsRelicResponse = this.newRelicManager.GetAllApplications().GetAwaiter().GetResult();
+			var messageText = incomingMessage.TargetedText.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+			var accountName = string.Empty;
+			if (messageText.Length == 3)
+			{
+				accountName = messageText[2];
+			}
+
+			var newRelicApplicationsRelicResponse = this.newRelicManager.GetAllApplications(accountName).GetAwaiter().GetResult();
 
 			if (newRelicApplicationsRelicResponse.OperationStatus == OperationStatus.Success
 				&& !newRelicApplicationsRelicResponse.Applications.Any())
@@ -317,7 +349,8 @@ namespace CBot.Modules.NewRelic
 
 		private static bool ApplicationDetailTargetedCommandMisformed(string message)
 		{
-			return message.Split(" ", StringSplitOptions.RemoveEmptyEntries).Length != 4;
+			var length = message.Split(" ", StringSplitOptions.RemoveEmptyEntries).Length;
+			return length < 4 || length > 5;
 		}
 
 		private static IEnumerable<ResponseMessage> ChuckAttachmentsAndReplyToChannel(
@@ -347,6 +380,12 @@ namespace CBot.Modules.NewRelic
 			}
 		}
 
-		private static string GetApplicationDetailExample => $"`@{{bot}} {ApplicationDetailCommand} %PROD%`";
+		private static string GetAllApplicationsExample => $"`@{{bot}} {AllApplicationsCommand} staging`";
+
+		private static string GetAllApplicationsDetailExample => $"`@{{bot}} {AllApplicationsCommand} detail staging`";
+
+		private static string GetUnhealthyApplicationsExample => $"`@{{bot}} {UnhealthyApplicationsCommand} staging`";
+
+		private static string GetApplicationDetailExample => $"`@{{bot}} {ApplicationDetailCommand} %AMER% staging`";
 	}
 }

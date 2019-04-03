@@ -1,13 +1,16 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace CBot.Modules.NewRelic
 {
 	public interface IManageNewRelic
 	{
-		Task<NewRelicResponse> GetAllApplications();
+		IEnumerable<string> GetAccountNames();
 
-		Task<NewRelicResponse> GetUnhealthyApplications();
+		Task<NewRelicResponse> GetAllApplications(string accountName = null);
 
-		Task<NewRelicResponse> GetApplicationsLikeName(string searchPattern);
+		Task<NewRelicResponse> GetUnhealthyApplications(string accountName = null);
+
+		Task<NewRelicResponse> GetApplicationsLikeName(string searchPattern, string accountName = null);
 	}
 }

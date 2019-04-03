@@ -2,6 +2,10 @@
 {
 	public class ModuleConfiguration
 	{
+		public string AccountName { get; set; }
+
+		public bool IsDefault { get; set; }
+
 		public string ApiUrl { get; set; }
 
 		public string ApiKey { get; set; }

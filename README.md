@@ -51,14 +51,14 @@ Pulls application status from NewRelic.
 
 ### Example Command(s)
 
-`@bot unhealthy newrelic applicataions`
+`@bot unhealthy newrelic applications account`
 
 ### Configuration
 
 ```json
-"newrelic": {
+"NewRelic": {
+		"Accounts": "account1-id,account1-apikey,account1-name,account1-is-default|account2-id,account2-apikey,account2-name,account2-is-default",
 		"ApiUrl": "https://api.newrelic.com/v2/",
-		"ApiKey": "YOUR_API_KEY",
-		"ApplicationsAccountBaseUrl": "https://rpm.newrelic.com/accounts/YOUR_ACCOUNT_ID/applications/"
+		"ApplicationsAccountBaseUrl": "https://rpm.newrelic.com/accounts/{accountId}/applications/"
 	}
 ```

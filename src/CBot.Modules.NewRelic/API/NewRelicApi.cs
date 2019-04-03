@@ -1,27 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
 using CBot.Modules.NewRelic.API.Models;
+
+using Microsoft.Extensions.Logging;
 
 
 namespace CBot.Modules.NewRelic.API
 {
 	public class NewRelicApi : INewRelicApi
 	{
-		private readonly ModuleConfiguration configuration;
+		private readonly IEnumerable<ModuleConfiguration> configurations;
 
-		public NewRelicApi(ModuleConfiguration configuration)
+		private readonly ILogger<NewRelicApi> logger;
+
+		public NewRelicApi(IEnumerable<ModuleConfiguration> configurations, ILogger<NewRelicApi> logger)
 		{
-			this.configuration = configuration;
+			this.configurations = configurations;
+			this.logger = logger;
 		}
 
-		public async Task<IEnumerable<Application>> GetAllApplicationsSummary()
+		public IEnumerable<string> GetAccountNames()
+		{
+			return configurations.OrderByDescending(c => c.IsDefault).ThenBy(c => c.AccountName).Select(c => c.AccountName);
+		}
+
+		public async Task<IEnumerable<Application>> GetAllApplicationsSummary(string accountName)
 		{
 			const string RelativeUrl = "applications.json";
 
-			var client = this.GetHttpClientWithBaseAddress();
+			var client = this.GetHttpClientWithBaseAddress(accountName);
 			var result = await client.GetAsync(RelativeUrl);
 
 			if (!result.IsSuccessStatusCode)
@@ -33,11 +44,11 @@ namespace CBot.Modules.NewRelic.API
 			return apiResponse.Applications;
 		}
 
-		public async Task<IEnumerable<Application>> GetFilteredApplicationsSummaryByName(string searchTerm)
+		public async Task<IEnumerable<Application>> GetFilteredApplicationsSummaryByName(string searchTerm, string accountName)
 		{
 			var relativeUrl = "applications.json" + $"?filter[name]={searchTerm}";
 
-			var client = this.GetHttpClientWithBaseAddress();
+			var client = this.GetHttpClientWithBaseAddress(accountName);
 			var result = await client.GetAsync(relativeUrl);
 
 			if (!result.IsSuccessStatusCode)
@@ -49,10 +60,36 @@ namespace CBot.Modules.NewRelic.API
 			return apiResponse.Applications;
 		}
 
-		private HttpClient GetHttpClientWithBaseAddress()
+		private HttpClient GetHttpClientWithBaseAddress(string accountName)
 		{
-			var httpClient = new HttpClient { BaseAddress = new Uri(this.configuration.ApiUrl) };
-			httpClient.DefaultRequestHeaders.Add("X-API-Key", this.configuration.ApiKey);
+			ModuleConfiguration configuration;
+			if (string.IsNullOrWhiteSpace(accountName))
+			{
+				configuration = configurations.FirstOrDefault(c => c.IsDefault);
+			}
+			else
+			{
+				configuration = configurations.FirstOrDefault(c => c.AccountName.Equals(accountName, StringComparison.InvariantCultureIgnoreCase));
+			}
+
+			if (configuration is null)
+			{
+				var errorMessage = string.Empty;
+				if (string.IsNullOrWhiteSpace(accountName))
+				{
+					errorMessage = "No default New Relic configuration was found.";
+				}
+				else
+				{
+					errorMessage = $"No New Relic configuration was found by name {accountName}";
+				}
+
+				logger.LogError(errorMessage);
+				throw new Exception(errorMessage);
+			}
+
+			var httpClient = new HttpClient { BaseAddress = new Uri(configuration.ApiUrl) };
+			httpClient.DefaultRequestHeaders.Add("X-API-Key", configuration.ApiKey);
 			return httpClient;
 		}
 	}
