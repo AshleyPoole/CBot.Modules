@@ -7,7 +7,7 @@
     <Authors>Ashley Poole</Authors>
     <Description>NewRelic module for CBot framework</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>Add NewRelic APM link to config.</PackageReleaseNotes>
+    <PackageReleaseNotes>Added ability to query multiple New Relic accounts.</PackageReleaseNotes>
     <PackageTags>CBot.Modules CBot NewRelic csharpbot chatops chatbot bot</PackageTags>
     <PackageProjectUrl>https://github.com/AshleyPoole/CBot.Modules</PackageProjectUrl>
     <RepositoryUrl>https://github.com/AshleyPoole/CBot.Modules</RepositoryUrl>
