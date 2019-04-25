@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 using CBot.Messaging.Domain;
@@ -323,7 +324,9 @@ namespace CBot.Modules.IncidentManagement
 
 		private static bool IncidentCommandWellFormatted(string message) => message.Split(" ", StringSplitOptions.RemoveEmptyEntries).Length >= 3;
 
-		private static string GetIncidentText(string commandPrefix, string message) => message.Replace(commandPrefix, string.Empty).Trim();
+		private static string GetIncidentText(string commandPrefix, string message) =>
+			message.Replace(commandPrefix, string.Empty, true, CultureInfo.InvariantCulture).Replace("\"", string.Empty)
+				.Trim();
 
 		private string DeclareIncidentExample() => $"`@{{bot}} {this.declareIncidentCommand} Server is on fire`";
 

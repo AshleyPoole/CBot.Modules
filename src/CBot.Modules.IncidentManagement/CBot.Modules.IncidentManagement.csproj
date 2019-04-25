@@ -3,11 +3,11 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <PackageId>CBot.Modules.IncidentManagement</PackageId>
-    <PackageVersion>1.0.5</PackageVersion>
+    <PackageVersion>1.0.6</PackageVersion>
     <Authors>Ashley Poole</Authors>
     <Description>Incident Management module for CBot framework. Allows incidents to be declared and tracked using Azure storage.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>Fix exception when trying to create the clean postmortem link with a null postmortem link.</PackageReleaseNotes>
+    <PackageReleaseNotes>Handle case sensitivity for new incident commands</PackageReleaseNotes>
     <PackageTags>CBot.Modules CBot Incident IncidentManagement IncidentResponse csharpbot chatops chatbot bot</PackageTags>
     <PackageProjectUrl>https://github.com/AshleyPoole/CBot.Modules</PackageProjectUrl>
     <RepositoryUrl>https://github.com/AshleyPoole/CBot.Modules</RepositoryUrl>
