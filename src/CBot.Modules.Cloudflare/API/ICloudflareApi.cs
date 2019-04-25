@@ -11,5 +11,7 @@ namespace CBot.Modules.Cloudflare.API
 		Task<bool> PurgeZone(Zone zone);
 
 		Task<bool> PurgeZoneCacheTag(Zone zone, string cacheTag);
+
+		Task<string> GetRayIdLog(Zone zone, string rayId, string fields);
 	}
 }

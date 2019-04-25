@@ -7,5 +7,7 @@ namespace CBot.Modules.Cloudflare
 		Task<CloudflareResponse> PurgeZone(string zoneName, string requestedBy);
 
 		Task<CloudflareResponse> PurgeZoneCacheTag(string zoneName, string cacheTag, string requestedBy);
+
+		Task<CloudflareResponse> GetZoneRayIdLogs(string zoneName, string rayId);
 	}
 }

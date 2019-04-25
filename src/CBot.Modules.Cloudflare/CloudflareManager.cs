@@ -63,5 +63,24 @@ namespace CBot.Modules.Cloudflare
 
 			return new CloudflareResponse(OperationStatus.Success, zone.Name, zone.Id);
 		}
+
+		public async Task<CloudflareResponse> GetZoneRayIdLogs(string zoneName, string rayId)
+		{
+			const string RayIdLogFields = "RayID,ClientIP,ClientRequestHost,ClientRequestMethod,ClientRequestProtocol,ClientRequestUserAgent,ClientRequestURI,ClientSSLProtocol,ClientSrcPort,CacheCacheStatus,EdgeStartTimestamp,EdgeEndTimestamp,EdgeRequestHost,EdgeResponseStatus,EdgeResponse,EdgeOriginIP,EdgeRateLimitID,EdgeRateLimitAction,OriginResponseTime,OriginResponseStatus,OriginSSLProtocol,ZoneID,WAFAction,WAFFlags,WAFProfile,WAFMatchedVar,WAFRuleID,WAFRuleMessage";
+
+			var zone = await this.cloudflareApi.GetZoneByName(zoneName);
+
+			if (zone == null)
+			{
+				this.logger.LogWarning($"Unable to find Cloudflare zone for zone {zoneName} for CF RAY ID log retrieval");
+				return new CloudflareResponse(OperationStatus.ZoneNotFound, zoneName);
+			}
+
+			var response = await this.cloudflareApi.GetRayIdLog(zone, rayId, RayIdLogFields);
+
+			return string.IsNullOrWhiteSpace(response)
+						? new CloudflareResponse(OperationStatus.Failed, zone.Name, zone.Id)
+						: new CloudflareResponse(OperationStatus.Success, zone.Name, zone.Id, response);
+		}
 	}
 }

@@ -46,6 +46,11 @@ namespace CBot.Modules.Cloudflare.API
 			return deleteResponse.Success;
 		}
 
+		public async Task<string> GetRayIdLog(Zone zone, string rayId, string fields)
+		{
+			return await this.GetRequestString($"/zones/{zone.Id}/logs/rayids/{rayId}?fields={fields}");
+		}
+
 		private async Task<ApiMultipleResourceResponse> GetRequest(string queryString)
 		{
 			using (var handler = new HttpClientHandler())
@@ -58,6 +63,21 @@ namespace CBot.Modules.Cloudflare.API
 					var request = await client.GetAsync(this.configuration.ApiUrl + queryString);
 					var jsonString = await request.Content.ReadAsStringAsync();
 					return JsonConvert.DeserializeObject<ApiMultipleResourceResponse>(jsonString, SerializerSettings.Settings);
+				}
+			}
+		}
+
+		private async Task<string> GetRequestString(string queryString)
+		{
+			using (var handler = new HttpClientHandler())
+			{
+				using (var client = new HttpClient(handler))
+				{
+					client.DefaultRequestHeaders.Add("X-Auth-Email", this.configuration.AuthEmail);
+					client.DefaultRequestHeaders.Add("X-Auth-Key", this.configuration.AuthKey);
+
+					var request = await client.GetAsync(this.configuration.ApiUrl + queryString);
+					return await request.Content.ReadAsStringAsync();
 				}
 			}
 		}
